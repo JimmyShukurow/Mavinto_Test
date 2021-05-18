@@ -17,9 +17,9 @@ class CreateUserDataTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('surname');
-            $table->string('email');
-            $table->bigInteger('employee_id');
-            $table->bigInteger('phone');
+            $table->string('email')->unique();
+            $table->bigInteger('employee_id')->unique();
+            $table->bigInteger('phone')->unique();
             $table->integer('point');
             $table->timestamps();
         });

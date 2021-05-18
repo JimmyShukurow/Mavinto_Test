@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UserData;
 use Illuminate\Http\Request;
+use Throwable;
 
 class HomPageController extends Controller
 {
@@ -19,30 +20,39 @@ class HomPageController extends Controller
 
         if (($h = fopen("{$filename}", "r")) !== FALSE) 
         {
-            $coutnter = 0;
-        while (($data = fgetcsv($h, 1000, ";")) !== FALSE) 
-        {
-            if ($coutnter > 0){
-                $phone = str_replace(array('(',')','-'),'',$data[4]);
-                UserData::create([
-                    'name'=> $data[0],
-                    'surname'=> $data[1],
-                    'email'=> $data[2],
-                    'employee_id'=> $data[3],
-                    'phone'=> $phone,
-                    'point'=> $data[5]
-                ]);	
-                
-            } 
-            $coutnter++;
-            	
-        }
+            try{
+                $coutnter = 0;
+                global $isim;
+                while (($data = fgetcsv($h, 1000, ";")) !== FALSE) 
+                {
+                    if ($coutnter > 0){
+                        $phone = str_replace(array('(',')','-'),'',$data[4]);
+                        $isim=$data[0];
+                        UserData::firstOrCreate([
+                            'name'=> $data[0],
+                            'surname'=> $data[1],
+                            'email'=> $data[2],
+                            'employee_id'=> $data[3],
+                            'phone'=> $phone,
+                            'point'=> $data[5]
+                        ]);	
+                        
+                    } 
+                    $coutnter++;
+                        
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $hataBilgisi ="<u>".$isim."</u> isimli kullanicida tekrarlanan bilgiler var";
+                return response()->json(["error"=>$hataBilgisi]);
+            }
+            
 
         fclose($h);
         }
 
         
 
-        return back();
+        return response()->json(["success"=>"Tamam"]);
     }
 }
